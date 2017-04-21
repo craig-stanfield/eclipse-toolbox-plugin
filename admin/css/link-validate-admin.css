@@ -1,0 +1,112 @@
+/**
+ * All of the CSS for your admin-specific functionality should be
+ * included in this file.
+ */
+.link-validate {
+    border: 1px solid black;
+    color: black;
+    text-align: center;
+}
+
+.red{
+    background-color: tomato;
+}
+
+.green{
+    background-color: lightgreen;
+}
+
+.percentbar {
+    background:green;
+    border:1px solid #666666;
+    height:10px;
+}
+.percentbar div {
+    background: red;
+    height: 10px;
+}
+
+.table {
+    width:100%;
+}
+.link {
+    width: 60%;
+}
+
+.source {
+    width: 30%;
+}
+
+.status {
+    width: 100px;
+}
+
+.counter {
+    width: 50px;
+}
+
+.repair {
+    width: 10%;
+    background-color: #EC9F24;
+}
+
+.tr {
+    height: 32px;
+}
+
+#lv-tab-menu {
+    width:80%;
+    padding:5px;
+    background: none repeat scroll 0 0 #EC9F24;
+}
+#lv-tab-menu a {
+    background: none repeat scroll 0 0 #003D51;
+    border: 0 none;
+    color: #fff;
+    display: inline-block;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 12px 35px;
+    opacity:0.5;
+}
+#lv-tab-menu a:hover {
+    cursor:pointer;
+    background: none repeat scroll 0 0 #003D51;
+    opacity:1;
+}
+#lv-tab-menu a.active {
+    background: none repeat scroll 0 0 #003D51;
+    opacity:1;
+}
+#lv-settings-form-admin .submit-btn {
+    width: 100%;
+    display: inline-block;
+    padding-top: 10px;
+    margin-top: 10px;
+    border-top: 1px dashed #003D51;
+}
+#lv-settings-form-admin .submit-btn .button-primary {
+    cursor:pointer;
+    height:35px;
+}
+#lv-settings-form-admin .csbwfs-setting p label {
+    min-width:75px;
+    display:inline-block;
+}
+#div-lv-support img {
+    width:50%px;
+    height:auto;
+}
+#lv-settings-form-admin ul {
+    list-style:inside
+}
+#lv-settings-form-admin #div-lv-support .contact-author {
+    background: none repeat scroll 0 0 #DC22FF;
+    border: 0 none;
+    color: #FFFFFF;
+    display: inline-block;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 5px;
+    text-decoration: none;
+}
