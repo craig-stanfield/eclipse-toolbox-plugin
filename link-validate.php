@@ -17,7 +17,7 @@
  * Plugin URI:        https://www.eclipse-creative.com/wordpress-plugins/EclipseToolbox/
  * Author URI:        https://www.eclipse-creative.com
  * Description:       Scrape the site and get all links. Test the links are active and hide them if not. find h tags
- * Version:           1.0.5
+ * Version:           1.1.0
  * Email:             c.stanfield@eclipse-creative.com
  * Author:            Eclipse Creative Consultants Ltd.
  * License:           GPL-2.0+
@@ -64,7 +64,6 @@ function deactivate_link_validate()
     require_once plugin_dir_path(__FILE__) . 'includes/class-link-validate-deactivator.php';
     Link_Validate_Deactivator::deactivate();
 }
-
 register_activation_hook(__FILE__, 'activate_link_validate');
 register_deactivation_hook(__FILE__, 'deactivate_link_validate');
 
@@ -262,7 +261,6 @@ function run_link_validate()
     $plugin->run();
 
 }
-
 run_link_validate();
 
 add_action('admin_menu', 'link_validate_setup_menu');
@@ -382,6 +380,7 @@ function get_page_links($path, $depth) {
     return $aLinks;
 
 }
+
 /**
  * @param $path
  * @return array
