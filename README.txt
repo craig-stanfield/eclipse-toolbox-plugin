@@ -58,6 +58,9 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 2. This is the second screen shot
 
 == Changelog ==
+= 1.1.0 =
+* uses github to update the plugin.
+
 = 1.0.5 =
 * h tag count issue table
 * name changed to Eclipse SEO Toolbox
