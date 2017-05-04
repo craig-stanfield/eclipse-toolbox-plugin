@@ -11,11 +11,24 @@
  * @subpackage Link_Validate/admin/partials
  */
 global $wpdb, $lvParallel, $lvMultiplier, $postTypes;
+$total          = $wpdb->get_var("SELECT count(id) FROM " . $wpdb->prefix . "lv_links");
+
+$h1s            = array();
+$qry            = 'SELECT * FROM ' . $wpdb->prefix . 'lv_links WHERE h1!=1;';
+$h1s            = $wpdb->get_results($qry);
+$h1broken       = count($h1s);
+$h1working      = $total - $h1broken;
+if ($total > 0) {
+    $h1workingPercent = $h1working / $total * 100;
+} else {
+    $h1workingPercent = 0;
+}
+$h1brokenPercent  = (100 - $h1workingPercent) + 0.0000000;
+
 $links          = array();
-$qry            = 'SELECT * FROM ' . $wpdb->prefix . 'lv_links WHERE status=0;';
+$qry            = 'SELECT * FROM ' . $wpdb->prefix . 'lv_links WHERE http_code!=200 AND http_code!=301 AND http_code!=302 AND http_code!=303;';
 $links          = $wpdb->get_results( $qry );
 $broken         = count($links);
-$total          = $wpdb->get_var("SELECT count(id) FROM " . $wpdb->prefix . "lv_links");
 $working        = $total - $broken;
 if ($total > 0) {
     $workingPercent = $working / $total * 100;
@@ -23,6 +36,7 @@ if ($total > 0) {
     $workingPercent = 0;
 }
 $brokenPercent  = (100 - $workingPercent) + 0.0000000;
+
 // Global Options
 if (isset($_POST["update_settings"])) {
     // Do the saving
@@ -126,7 +140,7 @@ $postTypes = get_option('post_type');
             <a id="lv-links" class="lv-tab-links active">Link Validation</a>
             <a id="lv-general" class="lv-tab-links">General Settings</a>
             <a id="lv-rebuild" class="lv-tab-links">Rebuild</a>
-            <!--<a id="lv-spare2" class="lv-tab-links">Spare2</a>-->
+            <a id="lv-h1-tags" class="lv-tab-links">&lt;h1&gt; Tags</a>
             <!--<a id="lv-spare3" class="lv-tab-links">Spare3</a>-->
             <!--<a id="lv-spare4" class="lv-tab-links">Spare4</a>-->
             <!--<a id="lv-spare5" class="lv-tab-links">Spare5</a>-->
@@ -311,9 +325,67 @@ $postTypes = get_option('post_type');
                     </tr>
                 </table>
             </div>
-            <!--<div id="div-lv-spare2" class="lv-tab" style="display: none;">
-                <h2>Spare Tab 2</h2>
-            </div>-->
+            <div id="div-lv-h1-tags" class="lv-tab" style="display: none;">
+                <h2>&lt;h1&gt; Issues</h2>
+
+
+                <p>Existing Incorrect h1 tags (<?php echo $h1broken ?>)&nbsp;&nbsp;&nbsp;&nbsp;
+                    <span>Existing Correct h1 tags (<?php echo $h1working ?>)&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span>Total Potential h1 Tags (<?php echo $total ?>)</span>
+                </p>
+
+                <div class="percentbar" style="width: 100%;">
+                    <div style="width:<?php echo round($h1brokenPercent); ?>%;"></div>
+                </div>
+                Percentage: <?php echo $h1brokenPercent; ?>%<br>
+                <p>&nbsp;</p>
+                <?php
+                if ($h1broken > 0) {
+                    ?>
+                    &nbsp;&nbsp;&nbsp;&nbsp;Test mode allows you to check if a link is broken,
+                    Live mode updates the link in the database if it has become active but leaves it unchanged if still broken,
+                    The page is then reloaded which removes the now active link,
+                    <p>&nbsp;</p>
+                    <!-- This file should primarily consist of HTML with a little bit of PHP. -->
+                    <table class="link-validate table">
+                        <tr class="link-validate tr">
+                            <td class="link-validate uri">Uri</td>
+                            <td class="link-validate h1">h1</td>
+                            <td class="link-validate h2">h2</td>
+                            <td class="link-validate h3">h3</td>
+                            <td class="link-validate h4">h4</td>
+                            <td class="link-validate h5">h5</td>
+                            <td class="link-validate h6">h6</td>
+                        </tr>
+                        <!-- Get the Existing links -->
+                        <?php foreach ($h1s as $link) {
+                            if ($link->h1 == 1) {
+                                $state = 'green';
+                            } else {
+                                $state = 'red';
+                            }
+                            $dc = $link->counter;
+                            if ($dc > 255) $dc = 255;
+                            ?>
+                            <tr class="link-validate tr" style="background-color: rgba(<?php echo $dc ?>, 0, 0, 0.5);">
+                                <td class="link-validate uri"><?php echo $link->link ?></td>
+                                <td class="link-validate h1" class="<?php echo $state ?>"><?php echo $link->h1 ?></td>
+                                <td class="link-validate h2"><?php echo $link->h2 ?></td>
+                                <td class="link-validate h3"><?php echo $link->h3 ?></td>
+                                <td class="link-validate h4"><?php echo $link->h4 ?></td>
+                                <td class="link-validate h5"><?php echo $link->h5 ?></td>
+                                <td class="link-validate h6"><?php echo $link->h6 ?></td>
+                            </tr>
+                        <?php } ?>
+                    </table>
+                    <p> </p>
+                    <p> </p>
+                    <p> </p>
+                <?php } else { ?>
+                    <h3>YOU HAVE NO BROKEN &lt;h1&gt; TAGS</h3>
+                <?php } ?>
+                <p>&nbsp;</p>
+            </div>
             <!--<div id="div-lv-spare3" class="lv-tab" style="display: none;">
                 <h2>Spare Tab 3</h2>
             </div>-->

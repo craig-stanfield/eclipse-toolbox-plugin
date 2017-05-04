@@ -17,7 +17,7 @@
  * Plugin URI:        https://www.eclipse-creative.com/wordpress-plugins/EclipseToolbox/
  * Author URI:        https://www.eclipse-creative.com
  * Description:       Scrape the site and get all links. Test the links are active and hide them if not. find h tags
- * Version:           1.1.0
+ * Version:           1.1.1
  * Email:             c.stanfield@eclipse-creative.com
  * Author:            Eclipse Creative Consultants Ltd.
  * License:           GPL-2.0+
@@ -33,6 +33,10 @@ if (!defined('WPINC')) {
 if( ! class_exists( 'Eclipse_Toolbox_Updater' ) ){
     include_once( plugin_dir_path( __FILE__ ) . 'updater.php' );
 }
+include_once('includes/class-eclcrawler.module');
+include_once('includes/class-message.module');
+include_once('includes/class-queue.module');
+include_once('includes/class-worker.module');
 $updater = new Eclipse_Toolbox_Updater( __FILE__ );
 $updater->set_username( 'craig-stanfield' );
 $updater->set_repository( 'eclipse-toolbox-plugin' );
@@ -305,39 +309,65 @@ function lv_array_unique($aLinks) {
  */
 function set_all_links($full = true)
 {
+    $version = 'new';
     $message = '';
     // first get home page links
     $path = get_home_url();
-    $links = get_page_links($path, 0);
-    if ($full) {
-        // Now we will get second level urls
-        foreach ($links as $aLink) {
-            $link = $aLink['link'];
-            if ($path != $link && $path . "/" != $link) {
-                $tmp = get_page_links($link, 1);
-                if ($tmp) $links = array_merge($links, $tmp);
-            }
-        }
-        // Remove duplicates
-        $links = lv_array_unique($links);
-        if ($full > 1) {
-            //And finally 3rd level urls
+    if ($version == 'new') {
+        gather_links($path);
+
+    } else {
+        $links = get_page_links($path, 0);
+        if ($full) {
+            // Now we will get second level urls
             foreach ($links as $aLink) {
                 $link = $aLink['link'];
-                if ($path != $link) {
-                    $tmp = get_page_links($link, 2);
+                if ($path != $link && $path . "/" != $link) {
+                    $tmp = get_page_links($link, 1);
                     if ($tmp) $links = array_merge($links, $tmp);
                 }
             }
             // Remove duplicates
             $links = lv_array_unique($links);
+            if ($full > 1) {
+                //And finally 3rd level urls
+                foreach ($links as $aLink) {
+                    $link = $aLink['link'];
+                    if ($path != $link) {
+                        $tmp = get_page_links($link, 2);
+                        if ($tmp) $links = array_merge($links, $tmp);
+                    }
+                }
+                // Remove duplicates
+                $links = lv_array_unique($links);
+            }
         }
+
+        // Drop existing entries and rebuild if they exist
+        populate_links($links);
     }
-
-    // Drop existing entries and rebuild if they exist
-    populate_links($links);
-
     return count($links);
+}
+
+function gather_links($path) {
+    $crawler = new EclCrawler();
+    $crawler->setURL($path);
+    $crawler->addContentTypeReceiveRule("#text/html#");
+    $crawler->addURLFilterRule("#\.(jpg|jpeg|gif|png)$# i");
+    $crawler->enableCookieHandling(true);
+    $crawler->setTrafficLimit(50000 * 1024);
+    $crawler->setCrawlingDepthLimit(5);
+    $crawler->setRequestDelay(0.5);
+    $crawler->go();
+    $report = $crawler->getProcessReport();
+    if (PHP_SAPI == "cli") $lb = "\n";
+    else $lb = "<br />";
+
+    echo $lb.$lb."Summary:".$lb;
+    echo "Links followed: ".$report->links_followed.$lb;
+    echo "Documents received: ".$report->files_received.$lb;
+    echo "Bytes received: ".$report->bytes_received." bytes".$lb;
+    echo "Process runtime: ".$report->process_runtime." sec".$lb;
 }
 
 function get_page_links($path, $depth) {

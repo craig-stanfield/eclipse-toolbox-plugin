@@ -1,0 +1,63 @@
+<?php
+
+/**
+ * Created by PhpStorm.
+ * User: Craig Stanfield
+ * Date: 03/05/2017
+ * Time: 10:04
+ */
+
+// It may take a whils to crawl a site ...
+set_time_limit(10000);
+
+// Inculde the phpcrawl-mainclass
+include("PHPCrawl_083/libs/PHPCrawler.class.php");
+
+class EclCrawler extends PHPCrawler
+{
+    function handleDocumentInfo(PHPCrawlerDocumentInfo $DocInfo)
+    {
+        global $wpdb;
+        $base = rtrim($DocInfo->url,"/") . '/';
+        // lets get the data from the database if it exists
+        $qry = 'SELECT * FROM ' . $wpdb->prefix . 'lv_links WHERE link="' . $base . '"';
+        $row = $wpdb->get_row($qry);
+        $dateDiff = 5;
+        $today = date('Y-m-d H:i:s');
+        if (!$row) {
+            $row = new stdClass();
+            $row->fallback = '#';
+            $row->counter = 0;
+        } else {
+            $source = $DocInfo->referer_url;
+            if ($source == null) {
+                $source = $DocInfo->source;
+            }
+            $now = new DateTime($today);
+            $then = new DateTime($row->active_since);
+            $dateDiff = $then->diff($now)->format("%a");
+        }
+
+        if ($dateDiff > 1) {
+            $data = array();
+            if ($row->id) $data['id'] = $row->id;
+            $data['link'] = $base;
+            $data['source'] = $source;
+            $data['http_code'] = $DocInfo->http_status_code;
+            $data['status'] = $DocInfo->error_code;
+            $data['counter'] = $row->counter + $DocInfo->error_code;
+            $data['active_since'] = $today;
+            $data['depth'] = $DocInfo->url_link_depth;
+            $data['fallback'] = $row->fallback;
+            $data['h1'] = substr_count($DocInfo->source, '<h1');
+            $data['h2'] = substr_count($DocInfo->source, '<h2');
+            $data['h3'] = substr_count($DocInfo->source, '<h3');
+            $data['h4'] = substr_count($DocInfo->source, '<h4');
+            $data['h5'] = substr_count($DocInfo->source, '<h5');
+            $data['h6'] = substr_count($DocInfo->source, '<h6');
+
+            $wpdb->replace($wpdb->prefix . 'lv_links', $data);
+        }
+    }
+
+}
